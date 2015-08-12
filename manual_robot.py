@@ -37,18 +37,27 @@ def readkey(getchar_fn=None):
     return ord(c3) - 65  # 0=Up, 1=Down, 2=Right, 3=Left arrows
 
 # This will control the movement of your robot and display on your screen
-while True:
-    keyp = readkey()
-    if keyp == UP:
-        rr.forward(1, motor_speed)
-        print 'forward'
-    elif keyp == DOWN:
-        rr.reverse(1, motor_speed)
-        print 'backward'
-    elif keyp == RIGHT:
-        rr.right(1, motor_speed)
-        print 'clockwise'
-    elif keyp == LEFT:
-        rr.left(1, motor_speed)
-        print 'anti clockwise'
+try: 
+    while True:
+        keyp = readkey()
+        if keyp == UP:
+            rr.forward(1, motor_speed)
+            print 'forward'
+        elif keyp == DOWN:
+            rr.reverse(1, motor_speed)
+            print 'backward'
+        elif keyp == RIGHT:
+            rr.right(1, motor_speed)
+            print 'clockwise'
+        elif keyp == LEFT:
+            rr.left(1, motor_speed)
+            print 'anti clockwise'
+        elif keyp == LEFT:
+            rr.left(1, motor_speed)
+            print 'anti clockwise'   
+        elif ord(keyp) == 3:
+            break
+
+except KeyboardInterrupt:
+    GPIO.cleanup()
 
