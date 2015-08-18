@@ -1,59 +1,36 @@
-#! /usr/bin/env python
-#
-# Fade an LED (or one color of an RGB LED) using GPIO's PWM capabilities.
-#
-# Usage:
-#   sudo python fade.py
-#
-# @author Jeff Geerling, 2015
+# 09_rgb_cheer_fader.py
+# uses the GPIO pins to fade an RGB LED
 
-import time
 import RPi.GPIO as GPIO
+import time 
 
-# LED pin mapping.
-red = 16 
-green = 20 
-blue = 21 
+# set LED pins
+red = 16
+green = 20
+blue = 21
 
-# Set which LED to use for fading.
-led = green
-
-# GPIO Setup.
+# Configure the Pi to use the BCM (Broadcom) pin names, rather than the pin positions
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-
 GPIO.setup(red, GPIO.OUT)
 GPIO.setup(green, GPIO.OUT)
 GPIO.setup(blue, GPIO.OUT)
 
-# Use PWM to fade an LED.
-fade = GPIO.PWM(led, 100)
-fade.start(0)
+pwmLED = GPIO.PWM(blue, 100)
+pwmLED.start(100)
 
-# Set up variables for the fading effect.
-value = 0
-increment = 2
-increasing = True
-count = 0
-
-while count < 1000:
-    fade.ChangeDutyCycle(value)
-
-    if increasing:
-        value += increment
-        time.sleep(0.002)
-    else:
-        value -= increment
-        time.sleep(0.002)
-
-    if (value >= 100):
-        increasing = False
-
-    if (value <= 20):
-        increasing = True
-
-    time.sleep(0.05)
-    count = count + 1
-
-GPIO.cleanup()
-
+# Start Pulse Width Modulation (PWM) on the red, green and blue channels to 
+# control the brightness of the LEDs.
+# Follow this link for more info on PWM: http://en.wikipedia.org/wiki/Pulse-width_modulation
+try:
+    while True:
+        for fade in range(1,60):
+            pwmLED.ChangeDutyCycle(fade)
+            time.sleep(0.035)
+        time.sleep(0.5)
+        for fade in range(60,1,-1):
+            pwmLED.ChangeDutyCycle(fade)
+            time.sleep(0.035)
+   
+except KeyboardInterrupt:
+    GPIO.cleanup()

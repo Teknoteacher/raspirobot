@@ -10,8 +10,8 @@ while True:
     if rr.sw1_closed() == False:
         rr.set_led1(0)
         rr.set_led2(1)
-    time.sleep(0.03)
+    time.sleep(0.015)
     if rr.sw1_closed() == False:
         rr.set_led1(1)
         rr.set_led2(0)
-    time.sleep(0.03)
+    time.sleep(0.015)

@@ -1,41 +1,62 @@
-#!/usr/bin/env python
-# coding: Latin-1
+# 09_rgb_cheer.py
+# uses the GPIO pins to control an RGB LED
 
-# code taken from the cheerlights.com website.
-
-# Load library functions we want
-import time
+import RPi.GPIO as GPIO
+import time 
 import urllib
 
-# Setup paramters
-cheerlightsUrl = "http://api.thingspeak.com/channels/1417/field/1/last.txt"
-colourMap = {"red":"200",
-             "green":"020",
-             "blue":"002",
-             "cyan":"022",
-             "white":"111",
-             "warmwhite":"222",
-             "purple":"102",
-             "magenta":"202",
-             "yellow":"220",
-             "orange":"210"}
+# set LED pins
+red = 16
+green = 20
+blue = 21
 
-# Loop indefinitely
-while True:
-    try:                                                # Attempt the following:
-        cheerlights = urllib.urlopen(cheerlightsUrl)        # Open cheerlights file via URL
-        colourName = cheerlights.read()                     # Read the last cheerlights colour
-        cheerlights.close()                                 # Close cheerlights file
-        if colourMap.has_key(colourName):                   # If we recognise this colour name then ...
-            ledBorgColour = colourMap[colourName]               # Get the LedBorg colour to use from the name
-        else:                                               # Otherwise ...
-            print "Unexpected colour '" + colourName + "'"      # Display the name we did not recognise
-            ledBorgColour = "000"                               # Use the colour of black / off
-        ledBorg = open('/dev/ledborg', 'w')                 # Open the LedBorg driver
-        ledBorg.write(ledBorgColour)                        # Set LedBorg to the new colour
-        ledBorg.close()                                     # Close the LedBorg driver
-    except:                                             # If we have an error
-        pass                                                # Ignore it (do nothing)
-    finally:                                            # Regardless of errors:
-        time.sleep(1)                                       # Wait for 1 second 
+# setup a map data structure with the RGB values for the different colours 
+cheerlights_url = "http://api.thingspeak.com/channels/1417/field/1/last.txt"
+colour_map = {"red":(100,0,0),
+             "green":(0,100,0),
+             "blue":(0,0,100),
+             "cyan":(0,50,100),
+             "white":(50,50,50),
+             "warmwhite":(100,100,100),
+             "purple":(50,0,100),
+             "magenta":(100,0,100),
+             "yellow":(100,100,0),
+             "orange":(100,50,0),
+             "pink":(100,0,100),
+             "oldlace":(100,100,100)}
+
+# configure the Raspberry Pi to use the Broadcom pin names, rather than the pin positions
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(red, GPIO.OUT)
+GPIO.setup(green, GPIO.OUT)
+GPIO.setup(blue, GPIO.OUT)
+
+# Start Pulse Width Modulation (PWM) on the red, green and blue channels to 
+# control the brightness of the LEDs.
+# Follow this link for more info on PWM: http://en.wikipedia.org/wiki/Pulse-width_modulation
+pwmRed = GPIO.PWM(red, 500)
+pwmRed.start(100)
+pwmGreen = GPIO.PWM(green, 500)
+pwmGreen.start(100)
+pwmBlue = GPIO.PWM(blue, 500)
+pwmBlue.start(100)
+
+# repeat until interrupted 
+try:
+    while True:
+        cheerlights = urllib.urlopen(cheerlights_url)# Open cheerlights file via URL
+        chosen_colour = cheerlights.read()           # Read the last cheerlights colour
+        cheerlights.close()                          # Close cheerlights file
+
+        pwmRed.ChangeDutyCycle(colour_map[chosen_colour][0])
+        pwmGreen.ChangeDutyCycle(colour_map[chosen_colour][1])
+        pwmBlue.ChangeDutyCycle(colour_map[chosen_colour][2])
+        time.sleep(0.5)
+except:                                              # if there is an error
+        pass                                         # ignore error (do nothing)
+finally:                                             # then no matter what happens
+        time.sleep(1)                                # wait 1 second 
+
+GPIO.cleanup()
 
